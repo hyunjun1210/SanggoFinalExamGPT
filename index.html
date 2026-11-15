@@ -49,9 +49,14 @@
   --accent: #1e63ae; --glow-tone: #539ff1;
   --cover-bg: radial-gradient(120% 75% at 88% 4%, #acd9ff 0%, #acd9ff00 52%), linear-gradient(165deg, #64adee 0%, #2168b7 52%, #123367 100%);
 }
+.tone-amber {
+  --accent: #955b19; --glow-tone: #d89541;
+  --cover-bg: radial-gradient(120% 75% at 88% 4%, #ffd391 0%, #ffd39100 52%), linear-gradient(165deg, #d9984a 0%, #a86622 50%, #523011 100%);
+}
 [data-theme=dark] .tone-violet { --accent: #a990ff }
 [data-theme=dark] .tone-mint { --accent: #3fd09e }
 [data-theme=dark] .tone-blue { --accent: #83bcff }
+[data-theme=dark] .tone-amber { --accent: #edba7b }
 
 * { box-sizing: border-box }
 [hidden] { display: none !important }
@@ -132,6 +137,15 @@ svg { display: block }
 }
 .cover-wireframe i { border: 1px solid #ffffff80; border-radius: 2cqi; background: #ffffff29 }
 .cover-wireframe i:first-child { grid-row: span 2 }
+.cover-box {
+  width:57cqi; height:46cqi; transform:rotate(-9deg); border:1px solid #ffffffba;
+  border-radius:4cqi; box-shadow:5cqi 5cqi #4b280c50; position:relative;
+  background:linear-gradient(90deg,transparent 40%,#ffffff62 40% 60%,transparent 60%) top / 100% 50% no-repeat,#ffffff29;
+}
+.cover-box::after {
+  content:""; position:absolute; width:16cqi; height:8cqi; bottom:6cqi; right:5cqi;
+  border:1px solid #ffffffb0; border-radius:1.5cqi; background:#ffffff33;
+}
 .cover-inner { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10cqi 9cqi 10cqi 14cqi }
 .cover-edition { align-self: flex-start; padding: 1.7cqi 3.8cqi; border-radius: 99px; background: #ffffff2b; box-shadow: inset 0 0 0 1px #ffffff47; font-size: 5.6cqi; font-weight: 650; letter-spacing: .04em; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px) }
 .cover-title { display: block; font-size: 12.6cqi; font-weight: 800; line-height: 1.05; letter-spacing: -.045em; text-shadow: 0 1px 14px #0000002e }
@@ -330,6 +344,7 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
         <li><a href="computer-graphics.html">컴퓨터그래픽 — 기말 대비</a></li>
         <li><a href="office-administration.html">사무행정 — 2회고사 대비</a></li>
         <li><a href="ui-implementation.html">응용프로그래밍 화면구현 — 시험 대비</a></li>
+        <li><a href="materials-dispatch.html">자재 출고 관리 — 객관식 연습</a></li>
       </ul>
     </noscript>
 
@@ -373,6 +388,14 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
       topics: ['사용자 중심 디자인', '화면 설계', '사용성 테스트', 'UI 개선'],
       specs: [[15, '개념', '개'], [30, '연습 문제', '개']],
       keywords: '응용 프로그래밍 화면 구현 ui ux 페르소나 카멜 와이어 프레임 nem'
+    },
+    {
+      id: 'materials', title: '자재 출고 관리', short: '자재', edition: '객관식 연습', tone: 'amber', glow: '#d89541', art: 'box',
+      href: 'materials-dispatch.html', storage: 'materials-exam-study-v1', practice: true,
+      lede: '시험지 40문제를 순서대로 풀거나 25문제 모의고사로 점검하세요. 헷갈리는 용어와 계산도 짧게 정리했어요.',
+      topics: ['출고 계획', '출고 검사', '이상 발생 처리', '공정별 수량', '포장·운반'],
+      specs: [[40, '전범위', '문제'], [25, '한 회 출제', '문제']],
+      keywords: '자재출고관리 자재관리 ncs 반품 샘플링 선입선출 상계'
     }
   ];
 
@@ -437,6 +460,9 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
     },
     wireframe() {
       return '<span class="cover-wireframe" aria-hidden="true"><i></i><i></i><i></i></span>';
+    },
+    box() {
+      return '<span class="cover-box" aria-hidden="true"></span>';
     }
   };
   const artCache = {};
@@ -536,8 +562,8 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
           <a class="pill secondary" href="${esc(book.href)}#exam">${record?.session ? '모의고사 이어 풀기' : '모의고사 풀기'}</a>
         </div>
         <nav class="quick" aria-label="${esc(book.title)} 바로가기">
-          <a href="${esc(book.href)}#notes">개념 학습 ›</a>
-          <a href="${esc(book.href)}#hints">시험 힌트 ›</a>
+          <a href="${esc(book.href)}#notes">${book.practice ? '용어·계산' : '개념 학습'} ›</a>
+          ${book.practice ? '' : `<a href="${esc(book.href)}#hints">시험 힌트 ›</a>`}
           <a href="${esc(book.href)}#wrong">오답 노트 ›</a>
           ${record?.latest ? `<a href="${esc(book.href)}#result">최근 결과 ›</a>` : ''}
         </nav>
@@ -558,7 +584,7 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
     $('continue-list').innerHTML = reading.map(book => {
       const {session, latest, wrong, lessons, at} = records.get(book.id);
       const href = esc(book.href);
-      const lessonLink = lessons?.last ? ['#learn/' + lessons.last, '개념 이어서'] : ['#notes', '개념 학습'];
+      const lessonLink = lessons?.last ? ['#learn/' + lessons.last, '개념 이어서'] : ['#notes', book.practice ? '용어·계산' : '개념 학습'];
       let line, percent = null, links;
       if (session) {
         line = `모의고사 진행 중 · ${session.total}문항 중 ${session.answered}문항 응답`;

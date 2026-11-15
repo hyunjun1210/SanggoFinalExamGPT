@@ -34,7 +34,10 @@
   const noteById = new Map(notes.map(item => [item.id,item]));
   const unitById = new Map(units.map(item => [item.id,item]));
   const questionById = new Map(questions.map(item => [item.id,item]));
-  const primaryNav = [
+  const {practice} = subject;
+  const primaryNav = practice ? [
+    ['home','홈','home'],['exam','문제 풀기','shuffle'],['notes','용어·계산','doc'],['wrong','오답 노트','undo']
+  ] : [
     ['home','홈','home'],['notes','개념 학습','book'],['summary','요약 노트','doc'],
     ['exam','랜덤 모의고사','shuffle'],['wrong','오답 노트','undo'],['hints','시험 힌트','list']
   ];
@@ -100,7 +103,7 @@
   const unitStyle = unit => `style="--unit:${unit.color}"`;
   const unitIcon = unit => `<span class="unit-icon" ${unitStyle(unit)}>${icon(unit.icon)}</span>`;
   const noteLink = id => `<a class="text-link" href="${noteHref(id)}">개념 보기 ${icon('right')}</a>`;
-  const questionUnit = question => unitById.get(noteById.get(question.noteId).unit);
+  const questionUnit = question => unitById.get(question.unit ?? noteById.get(question.noteId).unit);
 
   const {introLabel} = subject;
   const hasSummaryStep = false;
@@ -201,7 +204,7 @@
           return `<a href="#${id}" class="side-link" ${current ? 'aria-current="page"' : ''}>${icon(symbol)}${title}</a>`;
         }).join('')}
       </nav>
-      <div class="side-label">단원</div>
+      ${practice ? '' : `<div class="side-label">단원</div>
       <nav class="side-nav" aria-label="단원 목록">
         ${units.map(item => {
           const list = unitNotes(item.id);
@@ -210,8 +213,46 @@
           return `<a href="#notes/${item.id}" class="side-link" ${current}><span class="topic-dot" ${unitStyle(item)}></span><span class="side-text">${item.title}</span><span class="side-count">${doneCount(list)}/${list.length}</span></a>
           ${open ? `<div class="side-lessons">${list.map(note => `<a href="#learn/${note.id}" class="side-lesson ${lessons.done[note.id] ? 'done' : ''}" ${note.id === noteId ? 'aria-current="page"' : ''}><span class="side-check">${lessons.done[note.id] ? icon('check') : ''}</span><span>${note.title}</span></a>`).join('')}</div>` : ''}`;
         }).join('')}
-      </nav>
+      </nav>`}
       <div class="side-foot">${icon('save')} <span id="storage-label">${storageAvailable ? '이 브라우저에 학습 기록 저장' : '현재 탭에만 기록 유지'}</span></div>`;
+  }
+
+  function renderPracticeHome(replacing = false) {
+    const latest = state.latest;
+    main.innerHTML = pageHead(subject.name, subject.lede) + `
+      ${replacing ? '<p class="callout">새 연습을 시작하면 풀고 있던 회차가 교체됩니다.</p>' : ''}
+      ${state.session && !replacing ? `
+        <section class="panel practice-resume" aria-labelledby="practice-resume">
+          <div><h2 id="practice-resume">${state.session.label}</h2><p>${state.session.items.length}문제 중 ${countAnswered(state.session)}문제 응답</p></div>
+          <a class="button primary" href="#exam">${icon('play')} 이어 풀기</a>
+        </section>` : `
+        <div class="practice-modes">
+          <button class="practice-mode practice-primary" id="practice-mock" type="button" data-action="practice-mock">
+            <span class="practice-count">${practice.mockCount}</span>
+            <span><strong>모의고사</strong><small>전체 ${questions.length}문제에서 무작위 출제</small></span>${icon('right')}
+          </button>
+          <button class="practice-mode" type="button" data-action="practice-all">
+            <span class="practice-count">${questions.length}</span>
+            <span><strong>전범위 풀기</strong><small>시험지 1번부터 순서대로</small></span>${icon('right')}
+          </button>
+        </div>
+        ${replacing ? '<button class="button" type="button" data-action="resume">이어서 풀기</button>' : ''}`}
+      <nav class="practice-links" aria-label="문제 복습">
+        <a class="text-link" href="#notes">${icon('doc')} 용어·계산 정리</a>
+        <a class="text-link" href="#wrong">${icon('undo')} 오답 노트${Object.keys(state.wrong).length ? ' · ' + Object.keys(state.wrong).length + '문제' : ''}</a>
+        ${latest ? `<a class="text-link" href="#result">${icon('check')} 최근 결과 · ${latest.score}점</a>` : ''}
+      </nav>`;
+  }
+
+  function renderGlossary(groupId) {
+    main.innerHTML = pageHead('용어·계산 정리', '문제에서 헷갈리기 쉬운 용어와 계산만 모았습니다.') + `
+      <div class="practice-glossary">${practice.glossary.map(group => `
+        <section class="panel" id="${group.id}" aria-labelledby="${group.id}-title">
+          <h2 id="${group.id}-title">${group.title}</h2>
+          <dl class="terms">${group.terms.map(([term,definition]) => `<div class="term"><dt>${term}</dt><dd>${definition}</dd></div>`).join('')}</dl>
+        </section>`).join('')}</div>
+      <div class="actions"><a class="button primary" href="#exam">${icon('play')} 문제 풀기</a></div>`;
+    if (groupId) byId(groupId)?.scrollIntoView({block:'start'});
   }
 
   function renderHome() {
@@ -697,6 +738,7 @@
 
   function renderRoute(forceFocus = false) {
     let [requested = '',detail,stepParam] = location.hash.slice(1).split('/');
+    if (practice && ['learn','summary','hints'].includes(requested)) requested = 'notes';
     if (requested === 'notes' && noteById.has(detail)) {
       history.replaceState(null,'','#learn/' + detail);
       requested = 'learn';
@@ -722,7 +764,11 @@
       window.scrollTo(0,0);
     }
     switch (view) {
-      case 'notes': unitItem ? renderUnit(unitItem) : renderCourse(); break;
+      case 'notes':
+        if (practice) renderGlossary(detail);
+        else if (unitItem) renderUnit(unitItem);
+        else renderCourse();
+        break;
       case 'learn': renderLesson(note,stepParam); break;
       case 'summary': renderSummary(unit,note?.id); break;
       case 'hints': renderHints(); break;
@@ -732,12 +778,19 @@
         break;
       case 'result': renderResult(); break;
       case 'wrong': renderWrong(); break;
-      default: renderHome();
+      default: practice ? renderPracticeHome() : renderHome();
     }
   }
 
   function updateSearch() {
     const query = byId('search-input').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (practice) {
+      byId('search-results').innerHTML = practice.glossary.flatMap(group => group.terms
+        .filter(([term,definition]) => query.every(word => [term,definition,group.title].join(' ').toLowerCase().includes(word)))
+        .map(([term]) => `<a class="search-result" href="#notes/${group.id}"><strong>${term}</strong><small>${group.title}</small></a>`)
+      ).join('') || '<p class="small muted">일치하는 용어가 없습니다.</p>';
+      return;
+    }
     const matches = notes.filter(note => {
       const searchable = [note.title,note.page,note.cue,...note.terms.flat(),...(note.sheet ?? []),unitById.get(note.unit).title].join(' ').toLowerCase();
       return query.every(word => searchable.includes(word));
@@ -787,14 +840,17 @@
     return shuffle(picked);
   }
 
-  function startExam(pool,count,label) {
+  function startExam(pool,count,label,ordered = false) {
     if (!pool.length) return;
+    let selection;
+    if (ordered) selection = pool.slice(0,count);
+    else if (practice) selection = shuffle(pool).slice(0,count);
+    else selection = chooseQuestions(pool,Math.min(pool.length,count));
     state.session = {
-      items:chooseQuestions(pool, Math.min(pool.length,count)).map(question => ({
-        id:question.id,
-        order:question.type === 'O/X' ? [0,1] : shuffle([0,1,2,3]),
-        choice:null
-      })),
+      items:selection.map(question => {
+        const order = question.options.map((_,index) => index);
+        return {id:question.id,order:ordered || question.type === 'O/X' ? order : shuffle(order),choice:null};
+      }),
       index:0,
       started:Date.now(),
       label
@@ -809,6 +865,10 @@
   }
 
   function renderConfig(unit, replacing = false) {
+    if (practice) {
+      renderPracticeHome(replacing);
+      return;
+    }
     main.innerHTML = pageHead('랜덤 모의고사','단원과 문항 수를 고르면 객관식과 O/X 문제 중에서 무작위로 출제합니다. 제출하면 점수와 해설을 볼 수 있어요.') + `
       <form class="panel exam-config" id="exam-config">
         ${replacing ? '<p class="callout">새 모의고사를 시작하면 풀고 있던 회차가 교체됩니다.</p>' : ''}
@@ -884,7 +944,7 @@
       </div>
       <div class="exam-grid">
         <section class="panel" aria-labelledby="question-heading">
-          <div class="question-meta"><b>${session.index+1} / ${total}</b> ${unit.title} · ${question.type}</div>
+          <div class="question-meta"><b>${session.index+1} / ${total}</b> ${unit.title} · ${practice ? '시험지 ' + question.number + '번' : question.type}</div>
           <h2 class="question-title" id="question-heading" tabindex="-1">${question.prompt}</h2>
           <div class="choices" role="radiogroup" aria-labelledby="question-heading">
             ${current.order.map((option,index) => `<label class="choice">
@@ -970,16 +1030,19 @@
 
   function reviewItem(item,label,open=false) {
     const question = questionById.get(item.id);
-    const note = noteById.get(question.noteId);
     const correct = item.choice === question.answer;
     const tag = correct ? '정답' : item.choice === null ? '미응답' : '오답';
+    const reviewLabel = practice ? [label,`시험지 ${question.number}번`].filter(Boolean).join(' · ') : label;
+    const resource = practice
+      ? (question.glossary ? `<a class="text-link" href="#notes/${question.glossary}">용어·계산 보기 ${icon('right')}</a>` : '')
+      : noteLink(question.noteId);
     return `<details class="review-item" ${open ? 'open' : ''}>
-      <summary>${label ? `<span class="muted">${label}</span>` : ''}<span class="result-tag ${correct ? 'good' : 'bad'}">${tag}</span> ${question.prompt}</summary>
+      <summary>${reviewLabel ? `<span class="muted">${reviewLabel}</span>` : ''}<span class="result-tag ${correct ? 'good' : 'bad'}">${tag}</span> ${question.prompt}</summary>
       <div class="review-body">
         <p>내 답 <strong>${item.choice === null ? '미응답' : question.options[item.choice]}</strong></p>
         <p>정답 <strong class="review-answer">${question.options[question.answer]}</strong></p>
         <p>${question.explanation}</p>
-        <div class="note-actions">${noteLink(note.id)}</div>
+        ${resource ? `<div class="note-actions">${resource}</div>` : ''}
       </div>
     </details>`;
   }
@@ -992,10 +1055,10 @@
       return;
     }
     const total = result.items.length;
-    main.innerHTML = pageHead('모의고사 결과',result.label + ' · ' + total + '문항') + `
+    main.innerHTML = pageHead(practice ? '채점 결과' : '모의고사 결과',result.label + ' · ' + total + '문항') + `
       <section class="score-banner" aria-label="채점 결과">
         <div><h2>${result.score}점</h2><p>${total}문항 중 ${result.correct}문항 정답 · 경과 시간 ${elapsedLabel(result.duration)}</p></div>
-        <div class="actions"><a class="button primary" href="#exam">${icon('shuffle')} 새 모의고사</a><a class="button" href="#wrong">오답 노트</a></div>
+        <div class="actions"><a class="button primary" href="#exam">${icon('shuffle')} ${practice ? '새 문제 풀기' : '새 모의고사'}</a><a class="button" href="#wrong">오답 노트</a></div>
       </section>
       <div class="section-head review-title"><h2>문항별 해설</h2><label class="small"><input type="checkbox" id="filter-wrong" ${showWrongOnly ? 'checked' : ''}> 틀린 문제만</label></div>
       <div class="review-list" id="review-results"></div>`;
@@ -1046,8 +1109,9 @@
     setNavOpen(false);
     byId('sheet-dialog')?.close();
   });
-  byId('search-trigger').innerHTML = icon('search') + '<span>개념 검색</span><kbd>Ctrl K</kbd>';
-  byId('search-trigger').setAttribute('aria-label','개념 검색');
+  const searchLabel = practice ? '용어 검색' : '개념 검색';
+  byId('search-trigger').innerHTML = icon('search') + `<span>${searchLabel}</span><kbd>Ctrl K</kbd>`;
+  byId('search-trigger').setAttribute('aria-label',searchLabel);
   byId('search-trigger').addEventListener('click',openSearch);
   byId('search-input').addEventListener('input',updateSearch);
   byId('search-input').addEventListener('keydown', event => {
@@ -1103,7 +1167,9 @@
     switch (button.dataset.action) {
       case 'open-sheet': openSheet(); break;
       case 'submit': openSubmit(); break;
-      case 'new-config': renderConfig('all',true); byId('exam-scope').focus(); break;
+      case 'new-config': renderConfig('all',true); byId(practice ? 'practice-mock' : 'exam-scope').focus(); break;
+      case 'practice-mock': startExam(questions,practice.mockCount,`${practice.mockCount}문제 모의고사`); break;
+      case 'practice-all': startExam(questions,questions.length,'전범위 연습',true); break;
       case 'resume':
         if (location.hash === '#exam') renderRoute(true);
         else location.hash = '#exam';

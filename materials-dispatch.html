@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="자재 출고 관리 객관식 40문제, 25문제 모의고사, 용어와 계산 공식">
+<title>자재 출고 관리 시험 대비</title>
+<script>
+try { document.documentElement.dataset.theme = localStorage.getItem('materials-exam-theme') === 'dark' ? 'dark' : 'light'; } catch {}
+</script>
+<link rel="stylesheet" href="study.css">
+<style>
+:root {
+  --accent:#99611e; --accent-strong:#825016; --accent-ink:#75450f;
+  --tint:#faedd9; --tint-2:#fbf4e9; --side:#f8f5ee; --line:#e8decf;
+}
+[data-theme=dark] {
+  --accent:#e3b478; --accent-strong:#e3b478; --accent-ink:#f2c995;
+  --tint:#483624; --tint-2:#352a20; --side:#241f1a; --bg:#201b17;
+  --surface:#2d251e; --soft:#382d23; --line:#504234; --ink:#f4ede4; --body:#e7d7c6; --muted:#bdad9b;
+}
+.brand-mark { background:linear-gradient(145deg,#b9813c,#825016); box-shadow:0 4px 10px #82501630 }
+.practice-modes { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; max-width:780px; margin:16px 0 }
+.practice-mode {
+  display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:15px;
+  min-height:106px; padding:16px; text-align:left; background:var(--surface);
+  border:1px solid var(--line); border-radius:13px; transition:border-color .15s,background .15s;
+}
+.practice-mode:hover { border-color:var(--accent); background:var(--soft) }
+.practice-primary { background:var(--tint-2); border-color:color-mix(in srgb,var(--accent) 40%,var(--line)) }
+.practice-count {
+  display:grid; place-items:center; min-width:57px; height:54px; padding:0 8px; border-radius:9px;
+  background:var(--tint); color:var(--accent-ink); font-size:27px; font-weight:800; font-variant-numeric:tabular-nums;
+}
+.practice-mode strong,.practice-mode small { display:block }
+.practice-mode strong { font-size:17px }
+.practice-mode small { color:var(--muted); font-size:12px }
+.practice-mode > .icon { color:var(--accent-ink) }
+.practice-links { display:flex; flex-wrap:wrap; gap:12px 23px; margin-top:21px }
+.practice-resume { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; max-width:780px }
+.practice-resume h2,.practice-glossary h2 { font-size:18px }
+.practice-resume p { color:var(--muted); margin-top:4px; font-size:13px }
+.practice-glossary { display:grid; gap:12px; max-width:780px; margin-bottom:18px }
+.practice-glossary .panel { scroll-margin-top:80px }
+.practice-glossary h2 { margin-bottom:10px }
+.question-title strong { color:var(--accent-ink); font-weight:850 }
+@media(max-width:640px) {
+  .practice-modes { grid-template-columns:minmax(0,1fr) }
+  .practice-mode { min-height:84px }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+<aside class="sidebar" id="sidebar" aria-label="학습 메뉴"></aside>
+<div class="nav-overlay" id="nav-overlay" aria-hidden="true"></div>
+<div class="shell" id="shell">
+  <header class="topbar">
+    <button class="icon-button mobile-menu" id="mobile-menu" type="button" aria-label="메뉴 열기" aria-controls="sidebar" aria-expanded="false"></button>
+    <div class="crumb" id="breadcrumb"></div>
+    <div class="top-actions">
+      <button type="button" class="search-trigger" id="search-trigger"></button>
+      <button type="button" class="icon-button" id="theme-toggle"></button>
+    </div>
+  </header>
+  <main class="workspace" id="main" tabindex="-1"></main>
+</div>
+<dialog id="search-dialog" aria-labelledby="search-title">
+  <div class="dialog-inner">
+    <div class="dialog-head"><h2 id="search-title">용어 검색</h2><button type="button" class="icon-button close-dialog" aria-label="검색 닫기"></button></div>
+    <input class="search-input" id="search-input" type="search" placeholder="예를 들어 상계, 샘플링, 소요량" aria-label="검색어" autocomplete="off">
+    <div class="search-results" id="search-results"></div>
+  </div>
+</dialog>
+<dialog id="submit-dialog" aria-labelledby="submit-title">
+  <div class="dialog-inner">
+    <h2 id="submit-title">답안을 제출할까요?</h2>
+    <p class="small" id="submit-message"></p>
+    <div class="submit-actions"><button class="button close-dialog" type="button">계속 풀기</button><button class="button primary" type="button" id="confirm-submit">제출하고 채점</button></div>
+  </div>
+</dialog>
+<noscript>문제를 풀려면 브라우저에서 JavaScript를 켜 주세요.</noscript>
+<script id="study-data">
+const subject = {
+  name:'자재 출고 관리', tagline:'객관식 연습', icon:'box',
+  storage:'materials-exam-study-v1', theme:'materials-exam-theme',
+  lede:'시험지 40문제를 풀고, 제출하면 채점과 짧은 해설을 볼 수 있어요.',
+  practice:{
+    mockCount:25,
+    glossary:[
+      {id:'dispatch-terms',title:'출고 용어',terms:[
+        ['일괄 출고','여러 부품을 조립에 쓸 수 있게 한꺼번에 내보내는 방식.'],
+        ['현물 대체 · 입고 수량 상계','현물 대체는 자재를 다른 실물로 보충하는 것. 상계는 처리할 수량을 입고 수량에서 빼서 맞추는 것. 자재를 돌려보내는지(반품), 폐기하는지(미반품)와 조합해 유형을 구분한다.'],
+        ['선입선출','먼저 들어온 자재를 먼저 내보내는 원칙.'],
+        ['이상 발생','규격·수량이 요청과 다르거나 파손·불량이 있으면 출고를 보류하고 담당자에게 확인한다. 발견 내용과 처리 과정은 기록한다.']
+      ]},
+      {id:'inspection-transport',title:'검사·운반 용어',terms:[
+        ['치수 검사','길이·두께·지름·높이 같은 크기를 잰다. 동작 여부는 성능을 보는 항목이다.'],
+        ['샘플링 검사','전체 자재 중 일부를 표본으로 뽑아 검사하는 방식.'],
+        ['계수의 용이성','용기에 담긴 자재의 개수를 쉽게 셀 수 있다는 뜻.'],
+        ['운반 합리화 원칙','활성화는 바로 움직일 수 있게 받침대나 대차에 두기, 단위 화물은 운반 도구 하나에 한 종류만 싣기, 재취급 방지는 옮기고 다시 쌓는 일을 줄이기, 트레일러는 적재한 트레일러째 공급하기.']
+      ]},
+      {id:'calculations',title:'계산 공식',terms:[
+        ['자재 소요량','제품 1개당 필요한 자재 수 × 생산할 제품 수. 7번은 3 × 200 = 600개, 25번은 5 × 60 = 300개.'],
+        ['부피','가로 × 세로 × 높이. 세 변이 50cm, 50cm, 80cm라면 부피는 200,000cm³.']
+      ]}
+    ]
+  }
+};
+
+const units = [
+  {id:'plan',title:'출고 계획'},
+  {id:'inspection',title:'출고 검사'},
+  {id:'exceptions',title:'이상 발생 처리'},
+  {id:'amount',title:'공정별 종류·수량'},
+  {id:'method',title:'형태별 출고 방법'},
+  {id:'size',title:'형상·크기별 출고 방법'}
+];
+const notes = [];
+const hints = [];
+const questions = [];
+
+function question(number, unit, prompt, options, answer, explanation, glossary) {
+  questions.push({
+    id:'materials-' + number, number, unit, prompt, options,
+    answer:answer - 1, explanation, glossary, type:'객관식'
+  });
+}
+
+question(1,'plan','소요 자재 출고 계획을 세우는 주된 목적은?',[
+  '자재 구매 가격을 높이기','자재 입고 기록을 최소화하기','자재 종류를 최소화하기','창고 출고량을 최대화하기','생산에 필요한 자재를 필요한 수량만큼 공급하기'
+],5,'생산 일정에 맞춰 필요한 자재를 필요한 수량만큼 공급하는 것이 목적이다.');
+
+question(2,'plan','소요 자재 출고 계획을 세울 때 무엇을 고려해야 하나?',[
+  '보관 위치와 관계없이 같은 순서로 출고','생산 계획과 관계없이 일괄 출고','가격과 구매처만 고려','창고 공간을 비우기 위해 일정 없이 출고','생산 계획과 자재 소요량'
+],5,'생산 계획을 기준으로 언제 어떤 자재가 얼마나 필요한지 파악한다.');
+
+question(3,'plan','생산 계획에 따라 필요한 자재의 종류와 수량을 파악하는 일은?',[
+  '자재 폐기','제품 광고','거래처 평가','자재 소요량 산정','판매 가격 결정'
+],4,'소요량 산정은 생산에 필요한 자재 종류와 수량을 계산하는 일이다.','calculations');
+
+question(4,'plan','제품 조립에 필요한 여러 부품을 한꺼번에 출고하는 방식은?',[
+  '납품용 출고','일괄 출고','개별 출고','부품 출고','현장 출고'
+],2,'여러 부품을 모아 한 번에 내보내므로 일괄 출고다.','dispatch-terms');
+
+question(5,'plan','반품의 유형에 해당하지 <strong>않는</strong> 것은?',[
+  '반품 후 폐기 대체','반품 후 현물 대체','반품 후 입고 수량 상계','미반품(폐기) 현물 대체','미반품(폐기) 입고 수량 상계'
+],1,'반품 여부를 먼저 구분하고, 현물 대체 또는 입고 수량 상계로 처리한다.','dispatch-terms');
+
+question(6,'plan','일반적인 출고 분류에서 기타 출고에 해당하지 <strong>않는</strong> 것은?',[
+  '생산 출고','샘플 출고','폐기 출고','시험 출고','서비스 부품 출고'
+],1,'업종별 업무 프로세스 표준모델은 샘플·폐기·시험·서비스 부품 출고를 기타 출고로 분류한다. 첨부 사진에는 ③에 표시가 있어 학교 정답표 확인이 필요하다. <a class="text-link" href="https://www.scribd.com/document/616128513/%EC%97%85%EC%A2%85%EB%B3%84-%EC%97%85%EB%AC%B4-%ED%94%84%EB%A1%9C%EC%84%B8%EC%8A%A4-%ED%91%9C%EC%A4%80%EB%AA%A8%EB%8D%B8-%EC%A0%9C1%EC%B0%A8%EA%B8%88%EC%86%8D%EC%82%B0%EC%97%85" target="_blank" rel="noopener noreferrer">표준모델 38쪽</a>');
+
+question(7,'plan','제품 1개에 자재 3개가 든다. 제품 200개를 만들 때 자재는 몇 개 필요한가?',[
+  '200개','300개','500개','600개','700개'
+],4,'제품당 3개 × 제품 200개 = 자재 600개.','calculations');
+
+question(8,'plan','자재 보관 장소의 관리 방법으로 적절하지 <strong>않은</strong> 것은?',[
+  '보관 중 품질을 유지한다','종류와 규격별로 나누어 보관한다','변색 우려가 있는 자재를 햇빛이 잘 드는 곳에 둔다','보관 위치를 쉽게 찾도록 표시한다','먼저 입고된 자재부터 출고한다'
+],3,'햇빛에 변색될 수 있는 자재는 직사광선을 피해서 보관한다.','dispatch-terms');
+
+question(9,'plan','출고 계획을 수립할 때 자재의 규격을 확인하는 이유는?',[
+  '창고를 최대한 넓히기 위해','생산에 적합한 자재를 공급하기 위해','출고 기록을 생략하기 위해','생산 계획을 바꾸지 않기 위해','자재 가격을 낮추기 위해'
+],2,'규격을 확인하면 해당 공정에 맞는 크기와 성능의 자재를 공급할 수 있다.');
+
+question(10,'inspection','자재 출고 검사의 목적은?',[
+  '출고 자재가 요구 품질과 규격에 맞는지 확인한다','자재 구매 가격을 결정한다','창고의 전체 재고를 파악한다','자재 구매처를 바꾼다','자재 출고 기록을 확인한다'
+],1,'출고 전에 사용할 자재가 정해진 품질과 규격에 적합한지 검사한다.');
+
+question(11,'inspection','출고 검사 기준을 미리 정하는 주된 목적은?',[
+  '검사자의 기분에 따라 판단하기','검사 결과를 임의로 바꾸기','검사 결과의 일관성과 객관성을 확보하기','검사 절차를 생략하기','모든 자재를 표본검사로 합격시키기'
+],3,'미리 정한 기준을 적용하면 검사자가 달라져도 같은 근거로 판정할 수 있다.');
+
+question(12,'inspection','출고 검사 기준 항목에 해당하지 <strong>않는</strong> 것은?',[
+  '외관 검사','성능 검사','유통 검사','포장 검사','식별 검사'
+],3,'외관·성능·포장·식별은 출고 자재를 검사하는 항목이다. 이 문항의 유통 검사는 해당 항목에 없다.','inspection-transport');
+
+question(13,'inspection','치수 검사 항목에 해당하지 <strong>않는</strong> 것은?',[
+  '동작','길이','두께','지름','높이'
+],1,'치수 검사는 길이, 두께, 지름, 높이 같은 크기를 잰다. 동작 여부는 성능 검사에 가깝다.','inspection-transport');
+
+question(14,'inspection','샘플링 검사에 대한 설명으로 알맞은 것은?',[
+  '모든 자재를 검사한다','전체에서 일부를 표본으로 뽑아 검사한다','검사 없이 출고한다','구매 방법과 품질을 비교한다','자재를 하나도 빠짐없이 검사한다'
+],2,'샘플링은 일부를 대표 표본으로 뽑아 검사하는 방식이다.','inspection-transport');
+
+question(15,'exceptions','출고 중 이상이 발생했을 때의 처리 기준을 세우는 목적은?',[
+  '구매 가격을 올리기','자재 종류를 줄이기','비슷한 규격으로 그대로 출고하기','일관되고 신속하게 대응하기','실제 출고 수량에 맞춰 요청서를 고치기'
+],4,'미리 처리 기준을 정해 두면 이상이 생겼을 때 같은 절차로 빠르게 대응할 수 있다.');
+
+question(16,'exceptions','출고하려는 자재의 규격이 요청과 다를 때 적절한 조치는?',[
+  '비슷하므로 그대로 출고한다','기록 없이 지급한다','규격을 임의로 바꾼다','부족한 수량을 다른 자재로 대체한다','출고를 보류하고 담당자의 지시에 따라 처리한다'
+],5,'요청 규격과 다르면 출고를 보류하고 담당자에게 확인한다.','dispatch-terms');
+
+question(17,'exceptions','출고 중 이상 발생 사실을 기록하는 가장 중요한 이유는?',[
+  '기록 업무량을 늘리려고','원인과 처리 과정을 추적하려고','자재 구매를 중단하려고','담당자의 책임을 없애려고','공정별 생산 계획과 소요량을 파악하려고'
+],2,'발생 시점, 원인, 조치를 남겨야 이후 경위를 확인하고 재발을 막을 수 있다.','dispatch-terms');
+
+question(18,'exceptions','출고 내용과 자재 상태를 확인했을 때 이상이 <strong>없는</strong> 경우는?',[
+  '출고 수량이 틀림','자재 규격이 다름','출고 자재가 파손됨','요청과 다르게 작업자 개인 판단으로 출고함','요청서와 실제 출고 내용이 일치함'
+],5,'수량·규격 불일치나 자재 파손은 이상에 해당한다. 요청서와 실제 출고 내용이 일치하면 정상이다.');
+
+question(19,'exceptions','자재 출고 중 이상이 생길 수 있는 원인은?',[
+  '출고 전 자재명과 규격을 확인함','정해진 출고 절차를 지킴','출고 결과를 정확히 기록함','자재명과 규격을 확인하지 않고 출고함','재고를 정기적으로 확인함'
+],4,'자재명과 규격을 확인하지 않으면 다른 자재가 출고될 수 있다.');
+
+question(20,'exceptions','이상 발생 처리 기준을 개선할 때 가장 중요하게 반영할 것은?',[
+  '실제 이상 사례와 원인 분석 결과','보고 절차 전체 삭제','기존 기준의 즉시 폐기','이상 기록 삭제','담당자의 개인 선호'
+],1,'실제로 어떤 문제가 왜 생겼는지 분석한 뒤 처리 기준을 개선한다.');
+
+question(21,'amount','공정별 출고 자재를 파악하는 주된 목적은?',[
+  '구매 단가를 낮추고 거래처를 바꾸기','공정에 필요한 자재 종류와 수량을 확인해 생산 차질을 막기','창고에 있는 재고를 무조건 최소화하기','근무 시간을 확인해 인건비를 절감하기','완제품 판매 가격을 정하기'
+],2,'공정마다 필요한 자재를 제때 공급하면 자재 부족으로 생산이 멈추는 일을 줄일 수 있다.');
+
+question(22,'amount','공정별 자재 출고 수량을 정할 때 고려할 사항은?',[
+  '자재 구매 가격과 거래처 규모','창고 위치와 작업자 근무 시간','공정별 생산 계획과 자재 소요량','완제품 판매 가격과 소비자 선호','공급업체 홍보와 판매 실적'
+],3,'공정별 생산 계획을 기준으로 필요한 자재량을 파악한다.','calculations');
+
+question(23,'amount','공정별 자재 출고 목록을 작성하는 주된 목적은?',[
+  '자재 종류와 수량을 공정별로 관리하기','자재 가격을 임의로 바꾸기','품질 검사를 없애기','창고 크기를 늘리기','생산 계획을 취소하기'
+],1,'목록으로 공정마다 어떤 자재를 얼마나 출고하는지 확인할 수 있다.');
+
+question(24,'amount','자재가 과잉 출고되는 것을 방지하는 방법은?',[
+  '출고 수량을 임의로 정한다','출고 기록을 남기지 않는다','모든 공정에 같은 수량을 지급한다','공정별 소요량과 현재 쓸 수 있는 재고를 확인한다','자재 규격을 확인하지 않는다'
+],4,'소요량과 사용 가능한 재고를 대조하면 필요한 양을 넘겨 출고하는 일을 줄일 수 있다.');
+
+question(25,'amount','제품 1개에 자재 A가 5개 필요하다. 제품 60개를 생산할 때 A는 몇 개 필요한가?',[
+  '120개','180개','240개','300개','360개'
+],4,'제품당 5개 × 제품 60개 = 자재 300개.','calculations');
+
+question(26,'amount','공정별 출고 자재를 잘못 파악하면 어떤 문제가 생길 수 있나?',[
+  '필요한 자재가 정확히 공급된다','재고량을 항상 정확히 파악할 수 있다','자재 부족이나 생산 지연이 생길 수 있다','자재 품질이 자동으로 좋아진다','출고 기록이 필요 없어진다'
+],3,'필요한 수량보다 적게 공급되면 자재가 부족해져 생산이 늦어질 수 있다.');
+
+question(27,'amount','공정별 출고 자재를 파악할 때 확인 사항으로 적절하지 <strong>않은</strong> 것은?',[
+  '자재명','자재 규격','공정별 필요 수량','출고 예정일','경험에 따라 어림잡은 수량'
+],5,'필요 수량은 생산 계획과 소요량을 근거로 파악한다.');
+
+question(28,'amount','제품 1개당 필요한 자재량이 같을 때 생산량이 늘면 총 자재 소요량은?',[
+  '줄어든다','생산량과 관계없다','늘어난다','별도 계산 없이 자동으로 변경된다','쓸 자재의 양이 줄어든다'
+],3,'제품당 소요량에 생산량을 곱하므로 생산량이 늘면 총 소요량도 늘어난다.','calculations');
+
+question(29,'amount','출고 작업을 효율적으로 하면 생산 기간 단축과 무엇에 기여할 수 있나?',[
+  '납기 단축','정보 전달','소요 수량 파악','생산 계획 수립','출고 자재의 총수량'
+],1,'생산이 빨라지면 납품까지 걸리는 시간도 줄일 수 있다.');
+
+question(30,'amount','공정별 출고 운반의 원칙에 맞지 <strong>않는</strong> 것은?',[
+  '총 이동 거리를 파악한다','예상 운반 거리를 계산한다','공정별로 가장 짧은 경로를 정한다','중복 경로와 낭비되는 이동 거리를 줄인다','이동 거리를 고려하지 않고 운반한다'
+],5,'운반 경로는 이동 거리를 파악한 뒤 불필요한 경로를 줄여 정한다.');
+
+question(31,'amount','자재 운반을 쉽게 하는 운반 합리화 원칙에 해당하지 <strong>않는</strong> 것은?',[
+  '활성화의 원칙','운반 높이의 원칙','단위 화물의 원칙','재취급 방지의 원칙','트레일러의 원칙'
+],2,'시험지에 나온 네 가지 원칙은 활성화, 단위 화물, 재취급 방지, 트레일러다.','inspection-transport');
+
+question(32,'method','출고 자재의 형태와 특성에 따라 출고 방법을 다르게 정하는 이유는?',[
+  '재고 기록을 생략하기','자재 가격을 올리기','손상과 안전사고를 예방하고 효율적으로 운반하기','모든 자재를 똑같이 포장하기','출고 시간을 늘리기'
+],3,'자재에 맞는 포장과 운반 방법을 쓰면 손상과 사고를 줄일 수 있다.');
+
+question(33,'method','액체 자재를 출고할 때 무엇을 확인해야 하나?',[
+  '액체의 색상만 확인한다','다른 자재와 섞어 운반한다','용기의 크기만 확인한다','용기를 눕혀서 운반한다','용기의 밀폐 상태와 누출 여부를 확인한다'
+],5,'뚜껑과 밀폐 상태를 점검해 운반 중 액체가 새는 것을 막는다.');
+
+question(34,'method','유리처럼 깨지기 쉬운 자재를 출고할 때 적절한 방법은?',[
+  '높은 곳에서 아래로 던져 전달한다','충격 방지 포장재를 쓰고 파손 주의 표시를 한다','포장 없이 운반한다','무거운 물건 아래에 적재한다','흔들리도록 느슨하게 포장한다'
+],2,'완충재는 충격을 줄이고 주의 표시는 운반 담당자가 조심해서 다루도록 돕는다.');
+
+question(35,'method','자재 형태에 따른 출고 방법을 정할 때 자재 자체의 특성에 해당하지 <strong>않는</strong> 것은?',[
+  '자재의 중량','자재의 크기와 형태','자재의 위험성','자재 운송 절차','자재의 파손 가능성'
+],4,'중량·형태·위험성·파손 가능성은 자재의 특성이며, 운송 절차는 작업 방법이다.');
+
+question(36,'method','전용 운반 용기를 제작할 때 고려할 기준에 해당하지 <strong>않는</strong> 것은?',[
+  '자재의 유용성','운반의 용이성','계수의 용이성','공간의 활용성','취급의 용이성'
+],1,'전용 용기는 운반·개수 세기·취급이 쉽고 공간을 잘 쓸 수 있게 설계한다.','inspection-transport');
+
+question(37,'method','자재 형태에 맞는 출고 방법을 표준화하면 어떤 효과가 있나?',[
+  '자재 손상과 출고 오류를 줄일 수 있다','모든 자재의 포장 방법이 무조건 같아진다','창고 재고량이 줄어든다','자재 수량을 확인할 필요가 없어진다','출고 기록을 작성하지 않아도 된다'
+],1,'같은 형태의 자재에 정해진 방법을 적용하면 작업 편차와 실수가 줄어든다.');
+
+question(38,'size','자재의 형상과 크기에 따라 출고 방법을 다르게 정하는 이유는?',[
+  '모든 자재를 같은 상자에 넣기','자재 크기를 임의로 바꾸기','창고 재고량을 늘리기','출고 기록을 생략하기','특성에 맞게 포장·운반해 안전사고를 막기'
+],5,'자재마다 모양과 크기가 달라 안정적으로 포장하고 옮기는 방법도 달라진다.');
+
+question(39,'size','출고하려는 자재 크기가 요청서의 규격과 다를 때 적절한 조치는?',[
+  '규격 차이를 무시하고 출고한다','출고 요청서를 임의로 삭제한다','담당 부서에 확인한 뒤 처리한다','다른 자재와 섞어서 출고한다','확인 없이 출고 수량만 기록한다'
+],3,'규격이 맞는지 담당 부서에 확인한 뒤 지시에 따라 처리한다.','dispatch-terms');
+
+question(40,'size','길이가 서로 다른 목재를 출고할 때 적절한 방법은?',[
+  '길이를 구분하지 않고 무작위로 적재한다','수량만 확인하고 길이는 확인하지 않는다','긴 목재를 통로에 둔다','길이와 중량에 따라 구분해 안정적으로 적재한다','목재가 튀어나와도 그대로 둔다'
+],4,'길이와 무게를 고려해서 나누어 싣고, 목재가 기울거나 흔들리지 않게 적재한다.');
+</script>
+<script id="study-app" src="study-app.js"></script>
+</body>
+</html>
