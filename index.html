@@ -53,10 +53,15 @@
   --accent: #955b19; --glow-tone: #d89541;
   --cover-bg: radial-gradient(120% 75% at 88% 4%, #ffd391 0%, #ffd39100 52%), linear-gradient(165deg, #d9984a 0%, #a86622 50%, #523011 100%);
 }
+.tone-rose {
+  --accent: #a14460; --glow-tone: #df789d;
+  --cover-bg: radial-gradient(120% 75% at 88% 4%, #ffc5d9 0%, #ffc5d900 52%), linear-gradient(165deg, #db7497 0%, #a83e65 50%, #5d213c 100%);
+}
 [data-theme=dark] .tone-violet { --accent: #a990ff }
 [data-theme=dark] .tone-mint { --accent: #3fd09e }
 [data-theme=dark] .tone-blue { --accent: #83bcff }
 [data-theme=dark] .tone-amber { --accent: #edba7b }
+[data-theme=dark] .tone-rose { --accent: #f1acc1 }
 
 * { box-sizing: border-box }
 [hidden] { display: none !important }
@@ -146,6 +151,12 @@ svg { display: block }
   content:""; position:absolute; width:16cqi; height:8cqi; bottom:6cqi; right:5cqi;
   border:1px solid #ffffffb0; border-radius:1.5cqi; background:#ffffff33;
 }
+.cover-chart {
+  width:65cqi; height:46cqi; transform:rotate(-8deg); display:flex; align-items:flex-end; gap:4cqi;
+  padding:6cqi; border:1px solid #ffffffb0; border-radius:5cqi; box-shadow:5cqi 5cqi #51162f55;
+  background:repeating-linear-gradient(0deg,transparent 0 9cqi,#ffffff34 9cqi 9.4cqi) #ffffff25;
+}
+.cover-chart i { flex:1; height:var(--height); border-radius:1.4cqi 1.4cqi 0 0; background:#ffffffc2 }
 .cover-inner { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10cqi 9cqi 10cqi 14cqi }
 .cover-edition { align-self: flex-start; padding: 1.7cqi 3.8cqi; border-radius: 99px; background: #ffffff2b; box-shadow: inset 0 0 0 1px #ffffff47; font-size: 5.6cqi; font-weight: 650; letter-spacing: .04em; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px) }
 .cover-title { display: block; font-size: 12.6cqi; font-weight: 800; line-height: 1.05; letter-spacing: -.045em; text-shadow: 0 1px 14px #0000002e }
@@ -345,6 +356,7 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
         <li><a href="office-administration.html">사무행정 — 2회고사 대비</a></li>
         <li><a href="ui-implementation.html">응용프로그래밍 화면구현 — 시험 대비</a></li>
         <li><a href="materials-dispatch.html">자재 출고 관리 — 객관식 연습</a></li>
+        <li><a href="big-data-analysis.html">빅데이터 분석 — 시험 대비</a></li>
       </ul>
     </noscript>
 
@@ -396,6 +408,14 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
       topics: ['출고 계획', '출고 검사', '이상 발생 처리', '공정별 수량', '포장·운반'],
       specs: [[40, '전범위', '문제'], [25, '한 회 출제', '문제']],
       keywords: '자재출고관리 자재관리 ncs 반품 샘플링 선입선출 상계'
+    },
+    {
+      id: 'big-data', title: '빅데이터 분석', short: '빅데이터', edition: '시험 대비', tone: 'rose', glow: '#df789d', art: 'chart',
+      href: 'big-data-analysis.html', storage: 'big-data-exam-study-v1', lessons: 'big-data-exam-lessons-v1', concepts: 17,
+      lede: '시험 힌트 4쪽의 탐색적 분석, 모형 검증, 결과 시각화를 객관식 문제로 점검하세요.',
+      topics: ['EDA', '표본 추출', '모형 검증', '데이터 시각화'],
+      specs: [[17, '개념', '개'], [34, '연습 문제', '개']],
+      keywords: '빅데이터분석 빅 데이터 기술 통계 k-means anova 시각 변수 tableau'
     }
   ];
 
@@ -463,6 +483,9 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
     },
     box() {
       return '<span class="cover-box" aria-hidden="true"></span>';
+    },
+    chart() {
+      return '<span class="cover-chart" aria-hidden="true"><i style="--height:25%"></i><i style="--height:48%"></i><i style="--height:38%"></i><i style="--height:73%"></i><i style="--height:90%"></i></span>';
     }
   };
   const artCache = {};

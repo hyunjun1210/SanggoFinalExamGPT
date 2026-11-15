@@ -869,7 +869,8 @@
       renderPracticeHome(replacing);
       return;
     }
-    main.innerHTML = pageHead('랜덤 모의고사','단원과 문항 수를 고르면 객관식과 O/X 문제 중에서 무작위로 출제합니다. 제출하면 점수와 해설을 볼 수 있어요.') + `
+    const format = questions.some(question => question.type === 'O/X') ? '객관식과 O/X' : '객관식';
+    main.innerHTML = pageHead('랜덤 모의고사',`단원과 문항 수를 고르면 ${format} 문제 중에서 무작위로 출제합니다. 제출하면 점수와 해설을 볼 수 있어요.`) + `
       <form class="panel exam-config" id="exam-config">
         ${replacing ? '<p class="callout">새 모의고사를 시작하면 풀고 있던 회차가 교체됩니다.</p>' : ''}
         <div class="form-grid">
@@ -887,11 +888,13 @@
       </form>`;
 
     function updateCounts() {
+      const allUnits = byId('exam-scope').value === 'all';
       const size = getPool(byId('exam-scope').value).length;
-      const options = [5,10,15,20].filter(count => count < size);
+      const defaultCount = Math.min(size, allUnits ? notes.length : 10);
+      const options = [...new Set([5,10,15,20,defaultCount])].filter(count => count < size).sort((a,b) => a-b);
       byId('exam-count').innerHTML = options.map(count => `<option value="${count}">${count}문항</option>`).join('') + `<option value="${size}">전체 ${size}문항</option>`;
-      byId('exam-count').value = String(Math.min(size,byId('exam-scope').value === 'all' ? notes.length : 10));
-      byId('pool-info').textContent = `이 범위의 문제 은행에 ${size}문제가 있습니다.` + (byId('exam-scope').value === 'all' ? ` 전체 범위에서 ${notes.length}문항을 선택하면 ${subject.hintLabel} 항목마다 한 문제씩 출제됩니다.` : '');
+      byId('exam-count').value = String(defaultCount);
+      byId('pool-info').textContent = `이 범위의 문제 은행에 ${size}문제가 있습니다.` + (allUnits ? ` 전체 범위에서 ${notes.length}문항을 선택하면 ${subject.hintLabel} 항목마다 한 문제씩 출제됩니다.` : '');
     }
 
     byId('exam-scope').addEventListener('change', updateCounts);
