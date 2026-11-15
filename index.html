@@ -45,8 +45,13 @@
   --accent: #0b8a63; --glow-tone: #2bc79a;
   --cover-bg: radial-gradient(120% 75% at 88% 4%, #a8f5d9 0%, #a8f5d900 52%), radial-gradient(110% 70% at 0% 100%, #023a2c 0%, #023a2c00 62%), linear-gradient(165deg, #2cc898 0%, #0f8f6b 52%, #064a38 100%);
 }
+.tone-blue {
+  --accent: #1e63ae; --glow-tone: #539ff1;
+  --cover-bg: radial-gradient(120% 75% at 88% 4%, #acd9ff 0%, #acd9ff00 52%), linear-gradient(165deg, #64adee 0%, #2168b7 52%, #123367 100%);
+}
 [data-theme=dark] .tone-violet { --accent: #a990ff }
 [data-theme=dark] .tone-mint { --accent: #3fd09e }
+[data-theme=dark] .tone-blue { --accent: #83bcff }
 
 * { box-sizing: border-box }
 [hidden] { display: none !important }
@@ -118,6 +123,15 @@ svg { display: block }
 .cover::after { content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 0 1px #ffffff1f; background: linear-gradient(125deg, #ffffff40 0%, #fff0 34%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") }
 .cover-art { position: absolute; inset: 0 0 14cqi; display: grid; place-items: center }
 .cover-art svg { width: 98cqi; height: auto; overflow: visible }
+.cover-wireframe {
+  width: 65cqi; height: 44cqi; transform: rotate(-9deg);
+  border: 1px solid #ffffffbf; border-radius: 5cqi;
+  background: linear-gradient(#ffffff53 0 22%, transparent 22%) #ffffff24;
+  box-shadow: 4cqi 5cqi #10295745;
+  display: grid; grid-template-columns: 2fr 1fr; gap: 4cqi; padding: 14cqi 5cqi 5cqi;
+}
+.cover-wireframe i { border: 1px solid #ffffff80; border-radius: 2cqi; background: #ffffff29 }
+.cover-wireframe i:first-child { grid-row: span 2 }
 .cover-inner { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10cqi 9cqi 10cqi 14cqi }
 .cover-edition { align-self: flex-start; padding: 1.7cqi 3.8cqi; border-radius: 99px; background: #ffffff2b; box-shadow: inset 0 0 0 1px #ffffff47; font-size: 5.6cqi; font-weight: 650; letter-spacing: .04em; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px) }
 .cover-title { display: block; font-size: 12.6cqi; font-weight: 800; line-height: 1.05; letter-spacing: -.045em; text-shadow: 0 1px 14px #0000002e }
@@ -315,6 +329,7 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
       <ul style="max-width:560px;margin:40px auto;font-size:18px;line-height:2">
         <li><a href="computer-graphics.html">컴퓨터그래픽 — 기말 대비</a></li>
         <li><a href="office-administration.html">사무행정 — 2회고사 대비</a></li>
+        <li><a href="ui-implementation.html">응용프로그래밍 화면구현 — 시험 대비</a></li>
       </ul>
     </noscript>
 
@@ -350,6 +365,14 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
       topics: ['목표값 찾기', '고급 필터', '부분합', '피벗 테이블', '차트'],
       specs: [[20, '정리표 항목', '개'], [60, '연습 문제', '개']],
       keywords: 'excel 엑셀 스프레드시트 정리표'
+    },
+    {
+      id: 'ui', title: '응용프로그래밍 화면구현', short: 'UI', edition: '시험 대비', tone: 'blue', glow: '#539ff1', art: 'wireframe',
+      href: 'ui-implementation.html', storage: 'ui-exam-study-v1', lessons: 'ui-exam-lessons-v1', concepts: 15,
+      lede: '시험 힌트에 나온 UI 디자인·구현·테스트의 핵심 개념을 익히고 연습 문제로 점검하세요.',
+      topics: ['사용자 중심 디자인', '화면 설계', '사용성 테스트', 'UI 개선'],
+      specs: [[15, '개념', '개'], [30, '연습 문제', '개']],
+      keywords: '응용 프로그래밍 화면 구현 ui ux 페르소나 카멜 와이어 프레임 nem'
     }
   ];
 
@@ -411,6 +434,9 @@ mark { padding: 0 1px; border-radius: 3px; color: inherit; background: color-mix
           <circle cx="158" cy="100" r="3.2" fill="#fff"/>
         </g>
       </svg>`;
+    },
+    wireframe() {
+      return '<span class="cover-wireframe" aria-hidden="true"><i></i><i></i><i></i></span>';
     }
   };
   const artCache = {};
